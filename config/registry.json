@@ -5,6 +5,12 @@
       "host": "http://localhost",
       "port": 5001,
       "url": "http://localhost:5001/"
+    },
+    "registrytest": {
+      "apiName": "registrytest",
+      "host": "http://localhost",
+      "port": 5001,
+      "url": "http://localhost:5001/"
     }
   }
 }

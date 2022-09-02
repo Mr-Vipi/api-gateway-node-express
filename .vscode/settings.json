@@ -3,6 +3,7 @@
     "bogusapi",
     "fakeapi",
     "Guga",
+    "registrytest",
     "testapi"
   ]
 }
