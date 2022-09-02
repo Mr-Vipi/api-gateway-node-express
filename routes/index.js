@@ -1,12 +1,19 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
+const registry = require("../config/registry.json");
 
-router.all("/:apiName", (req, res) => {
+router.all("/:apiName/:path", (req, res) => {
   console.log("apiName:", req.params.apiName);
-  axios.get(`http://localhost:5001/${req.params.apiName}`).then((response) => {
-    res.send(response.data);
-  });
+  if (registry.services[req.params.apiName]) {
+    axios
+      .get(registry.services[req.params.apiName].url + req.params.path)
+      .then((response) => {
+        res.send(response.data);
+      });
+  } else {
+    res.send("API Name doesn't exist");
+  }
 });
 
 module.exports = router;
