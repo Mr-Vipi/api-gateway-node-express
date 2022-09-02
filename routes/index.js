@@ -5,13 +5,20 @@ const registry = require("../config/registry.json");
 const fs = require("fs");
 
 router.all("/:apiName/:path", (req, res) => {
-  console.log("apiName:", req.params.apiName);
-  if (registry.services[req.params.apiName]) {
+  const {
+    method,
+    headers,
+    body,
+    params: { apiName, path },
+  } = req;
+
+  console.log("apiName:", apiName);
+  if (registry.services[apiName]) {
     axios({
-      method: req.method,
-      url: registry.services[req.params.apiName].url + req.params.path,
-      headers: req.headers,
-      data: req.body,
+      method,
+      url: registry.services[apiName].url + path,
+      headers,
+      data: body,
     }).then((response) => {
       res.send(response.data);
     });
@@ -21,14 +28,15 @@ router.all("/:apiName/:path", (req, res) => {
 });
 
 router.post("/register", (req, res) => {
-  const registrationInfo = req.body;
-  registry.services[registrationInfo.apiName] = { ...registrationInfo };
+  const { apiName, protocol, host, port } = req.body;
 
+  const url = `${protocol}://${host}:${port}/`;
+  registry.services[apiName] = { ...req.body, url };
   fs.writeFile("./config/registry.json", JSON.stringify(registry), (error) => {
     if (error) {
-      res.send(`Could not register ${registrationInfo.apiName} \n ${error}`);
+      res.send(`Could not register ${apiName} \n ${error}`);
     } else {
-      res.send(`Successfully registered ${registrationInfo.apiName}`);
+      res.send(`Successfully registered ${apiName}`);
     }
   });
 });

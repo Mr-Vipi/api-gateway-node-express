@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const axios = require("axios");
-const HOST = "http://localhost";
+const HOST = "localhost";
 const PORT = 5002;
 
 app.use(express.json());
@@ -19,9 +19,9 @@ app.listen(PORT, () => {
     headers: { "Content-Type": "application/json" },
     data: {
       apiName: "registrytest",
+      protocol: "http",
       host: HOST,
       port: PORT,
-      url: `${HOST}:${PORT}/`,
     },
   }).then((response) => {
     console.log(response.data);
