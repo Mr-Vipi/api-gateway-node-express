@@ -3,6 +3,7 @@ const router = express.Router();
 const axios = require("axios");
 const registry = require("../config/registry.json");
 const fs = require("fs");
+const loadBalancer = require("../util/loadBalancer");
 
 router.all("/:apiName/:path", (req, res) => {
   const {
@@ -11,17 +12,21 @@ router.all("/:apiName/:path", (req, res) => {
     body,
     params: { apiName, path },
   } = req;
-
-  console.log("apiName:", apiName);
-  if (registry.services[apiName]) {
+  const service = registry.services[apiName];
+  if (service) {
+    const newIndex = loadBalancer[service.loadBalanceStrategy](service);
+    const url = service.instances[newIndex].url;
+    console.log("url:", url);
     axios({
       method,
-      url: registry.services[apiName].url + path,
+      url: url + path,
       headers,
       data: body,
-    }).then((response) => {
-      res.send(response.data);
-    });
+    })
+      .then((response) => {
+        res.send(response.data);
+      })
+      .catch((error) => res.send(""));
   } else {
     res.send("API Name doesn't exist");
   }
