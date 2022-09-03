@@ -14,6 +14,19 @@ router.all("/:apiName/:path", (req, res) => {
   } = req;
   const service = registry.services[apiName];
   if (service) {
+    if (!service.loadBalanceStrategy) {
+      service.loadBalanceStrategy = "ROUND_ROBIN";
+      fs.writeFile(
+        "./config/registry.json",
+        JSON.stringify(registry),
+        (error) => {
+          if (error) {
+            res.send(`Couldn't write load balance strategy \n ${error}`);
+          }
+        }
+      );
+    }
+
     const newIndex = loadBalancer[service.loadBalanceStrategy](service);
     const url = service.instances[newIndex].url;
     console.log("url:", url);
@@ -39,7 +52,7 @@ router.post("/register", (req, res) => {
   if (apiAlreadyExists({ ...req.body, url })) {
     res.send(`Configuration already exists for ${apiName} at ${url}`);
   } else {
-    registry.services[apiName].push({ ...req.body, url });
+    registry.services[apiName].instances.push({ ...req.body, url });
     fs.writeFile(
       "./config/registry.json",
       JSON.stringify(registry),
@@ -58,10 +71,10 @@ router.post("/unregister", (req, res) => {
   const { apiName, url } = req.body;
 
   if (apiAlreadyExists(req.body)) {
-    const index = registry.services[apiName].findIndex((instance) => {
+    const index = registry.services[apiName].instances.findIndex((instance) => {
       return url === instance.url;
     });
-    registry.services[apiName].splice(index, 1);
+    registry.services[apiName].instances.splice(index, 1);
     fs.writeFile(
       "./config/registry.json",
       JSON.stringify(registry),
@@ -82,7 +95,7 @@ const apiAlreadyExists = (registrationInfo) => {
   let exists = false;
   const { apiName, url } = registrationInfo;
 
-  registry.services[apiName].forEach((instance) => {
+  registry.services[apiName].instances.forEach((instance) => {
     if (instance.url === url) {
       exists = true;
     }
