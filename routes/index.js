@@ -29,16 +29,37 @@ router.all("/:apiName/:path", (req, res) => {
 
 router.post("/register", (req, res) => {
   const { apiName, protocol, host, port } = req.body;
-
   const url = `${protocol}://${host}:${port}/`;
-  registry.services[apiName] = { ...req.body, url };
-  fs.writeFile("./config/registry.json", JSON.stringify(registry), (error) => {
-    if (error) {
-      res.send(`Could not register ${apiName} \n ${error}`);
-    } else {
-      res.send(`Successfully registered ${apiName}`);
+
+  if (apiAlreadyExists({ ...req.body, url })) {
+    res.send(`Configuration already exists for ${apiName} at ${url}`);
+  } else {
+    registry.services[apiName].push({ ...req.body, url });
+    fs.writeFile(
+      "./config/registry.json",
+      JSON.stringify(registry),
+      (error) => {
+        if (error) {
+          res.send(`Could not register ${apiName} \n ${error}`);
+        } else {
+          res.send(`Successfully registered ${apiName}`);
+        }
+      }
+    );
+  }
+});
+
+const apiAlreadyExists = (registrationInfo) => {
+  let exists = false;
+  const { apiName, url } = registrationInfo;
+
+  registry.services[apiName].forEach((instance) => {
+    if (instance.url === url) {
+      exists = true;
     }
   });
-});
+
+  return exists;
+};
 
 module.exports = router;
