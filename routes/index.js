@@ -49,6 +49,30 @@ router.post("/register", (req, res) => {
   }
 });
 
+router.post("/unregister", (req, res) => {
+  const { apiName, url } = req.body;
+
+  if (apiAlreadyExists(req.body)) {
+    const index = registry.services[apiName].findIndex((instance) => {
+      return url === instance.url;
+    });
+    registry.services[apiName].splice(index, 1);
+    fs.writeFile(
+      "./config/registry.json",
+      JSON.stringify(registry),
+      (error) => {
+        if (error) {
+          res.send(`Could not unregister ${apiName} \n ${error}`);
+        } else {
+          res.send(`Successfully unregistered ${apiName}`);
+        }
+      }
+    );
+  } else {
+    res.send(`Configuration doesn't exist for ${apiName} at ${url}`);
+  }
+});
+
 const apiAlreadyExists = (registrationInfo) => {
   let exists = false;
   const { apiName, url } = registrationInfo;
