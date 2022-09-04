@@ -9,7 +9,7 @@
           "host": "localhost",
           "port": 5002,
           "url": "http://localhost:5002/",
-          "enabled": false
+          "enabled": true
         },
         {
           "apiName": "registrytest",
@@ -21,6 +21,14 @@
         }
       ],
       "loadBalanceStrategy": "ROUND_ROBIN"
+    }
+  },
+  "auth": {
+    "users": {
+      "johndoe": {
+        "username": "johndoe",
+        "password": "password"
+      }
     }
   }
 }

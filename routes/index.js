@@ -64,7 +64,7 @@ router.all("/:apiName/:path", (req, res) => {
     console.log("url:", url);
     axios({
       method,
-      url: url + path,
+      url: `${url}${path}`,
       headers,
       data: body,
     })
