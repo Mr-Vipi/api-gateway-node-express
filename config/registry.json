@@ -8,14 +8,16 @@
           "protocol": "http",
           "host": "localhost",
           "port": 5002,
-          "url": "http://localhost:5002/"
+          "url": "http://localhost:5002/",
+          "enabled": false
         },
         {
           "apiName": "registrytest",
           "protocol": "http",
           "host": "localhost",
           "port": 5001,
-          "url": "http://localhost:5001/"
+          "url": "http://localhost:5001/",
+          "enabled": true
         }
       ],
       "loadBalanceStrategy": "ROUND_ROBIN"

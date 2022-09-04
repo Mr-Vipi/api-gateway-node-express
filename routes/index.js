@@ -5,6 +5,38 @@ const registry = require("../config/registry.json");
 const fs = require("fs");
 const loadBalancer = require("../util/loadBalancer");
 
+router.post("/enable/:apiName", (req, res) => {
+  const {
+    body,
+    params: { apiName },
+  } = req;
+  const instances = registry.services[apiName].instances;
+  const index = instances.findIndex((srv) => srv.url === body.url);
+  if (index === -1) {
+    res.send({
+      status: "error",
+      message: `Couldn't find "${body.url}" for service "${apiName}"`,
+    });
+  } else {
+    instances[index].enabled = body.enabled;
+    fs.writeFile(
+      "./config/registry.json",
+      JSON.stringify(registry),
+      (error) => {
+        if (error) {
+          res.send(
+            `Could not enable/disable "${body.url}" for service "${apiName}": \n "${error}"`
+          );
+        } else {
+          res.send(
+            `Successfully enabled/disabled "${body.url}" for service "${apiName}" \n`
+          );
+        }
+      }
+    );
+  }
+});
+
 router.all("/:apiName/:path", (req, res) => {
   const {
     method,
@@ -50,7 +82,7 @@ router.post("/register", (req, res) => {
   const url = `${protocol}://${host}:${port}/`;
 
   if (apiAlreadyExists({ ...req.body, url })) {
-    res.send(`Configuration already exists for ${apiName} at ${url}`);
+    res.send(`Configuration already exists for "${apiName}" at "${url}"`);
   } else {
     registry.services[apiName].instances.push({ ...req.body, url });
     fs.writeFile(
@@ -58,9 +90,9 @@ router.post("/register", (req, res) => {
       JSON.stringify(registry),
       (error) => {
         if (error) {
-          res.send(`Could not register ${apiName} \n ${error}`);
+          res.send(`Could not register "${apiName}" \n ${error}`);
         } else {
-          res.send(`Successfully registered ${apiName}`);
+          res.send(`Successfully registered "${apiName}"`);
         }
       }
     );
@@ -80,14 +112,14 @@ router.post("/unregister", (req, res) => {
       JSON.stringify(registry),
       (error) => {
         if (error) {
-          res.send(`Could not unregister ${apiName} \n ${error}`);
+          res.send(`Could not unregister "${apiName}" \n ${error}`);
         } else {
-          res.send(`Successfully unregistered ${apiName}`);
+          res.send(`Successfully unregistered "${apiName}"`);
         }
       }
     );
   } else {
-    res.send(`Configuration doesn't exist for ${apiName} at ${url}`);
+    res.send(`Configuration doesn't exist for "${apiName}" at ${url}`);
   }
 });
 
